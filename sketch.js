@@ -6,52 +6,43 @@ const FPS = 60;
 
 const Y = 0;
 
-const speed = 3;
-
+let speed1 = 3;
 let scanner1X = 0;
-const scanner1Range = 20;
-const scanner1Width = scanner1Range;
+const scanner1Width = 50;
 
-let isReached = false;
+let speed2 = 1;
+let scanner2X = WIDTH / 2;
+const scanner2Width = 20;
 
 function setup() {
     r.InitWindow(WIDTH, HEIGTH, "Particle Detector");
     r.SetTargetFPS(FPS);
 }
 
-function getStatus() {
-    if ((scanner1X + scanner1Width) >= WIDTH) {
-        return true;
-    }
-
-    if (scanner1X <= 1) {
-        return false;
-    }
-
-    return isReached;
+function getSpeed(x, start, end, width, speed) {
+    return (((x + width) >= end) || (x <= start)) ? -speed : speed;
 }
 
-function isOverlap(scnX, scnRange, partStart, partRange) {
-    const scannerStart = scnX;
-    const scannerEnd = scannerStart + scnRange;
-    const partEnd = partStart + partRange;
+function isOverlap(scannerStart, scannerRange, particleStart, particleRange) {
+    const scannerEnd = scannerStart + scannerRange;
+    const particleEnd = particleStart + particleRange;
 
-    return (partEnd >= scannerStart) && (partStart <= scannerEnd);
+    return (particleEnd >= scannerStart) && (particleStart <= scannerEnd);
 }
 
-function getColorOnOverlap(part1Detect, part2Detect) {
-    return (part1Detect || part2Detect) ? r.RED : r.WHITE;
+function getColorOnOverlap(isOvrlp1, isOvrlp2) {
+    return (isOvrlp1 || isOvrlp2) ? r.ColorAlpha(r.RED, 0.7) : r.WHITE;
 }
 
 function update() {
-    isReached = getStatus();
-    scanner1X += isReached ? -speed : speed;
+    scanner1X += speed1;
+    speed1 = getSpeed(scanner1X, 0, WIDTH / 2, scanner1Width, speed1);
+
+    scanner2X += speed2
+    speed2 = getSpeed(scanner2X, WIDTH / 2, WIDTH, scanner2Width, speed2);
 }
 
 function draw() {
-    r.BeginDrawing();
-    r.ClearBackground(r.BLACK);
-
     const particle1Range = 50;
     const particle1Start = 100;
 
@@ -59,20 +50,23 @@ function draw() {
     const particle1Width = particle1Range;
 
     const particle2Range = 10;
-    const particle2Start = 200;
+    const particle2Start = 400;
 
     const particle2X = particle2Start;
     const particle2Width = particle2Range;
 
-    const particle1Detect = isOverlap(scanner1X, scanner1Range, particle1Start, particle1Range);
-    const particle2Detect = isOverlap(scanner1X, scanner1Range, particle2Start, particle2Range);
+    const color1 = getColorOnOverlap(isOverlap(scanner1X, scanner1Width, particle1Start, particle1Range), isOverlap(scanner1X, scanner1Width, particle2Start, particle2Range));
 
-    const color = getColorOnOverlap(particle1Detect, particle2Detect);
+    const color2 = getColorOnOverlap(isOverlap(scanner2X, scanner2Width, particle1Start, particle1Range), isOverlap(scanner2X, scanner2Width, particle2Start, particle2Range));
 
-    r.DrawRectangle(particle1X, Y, particle1Width, HEIGTH, r.BLUE);
-    r.DrawRectangle(particle2X, Y, particle2Width, HEIGTH, r.BLUE);
+    r.BeginDrawing();
+    r.ClearBackground(r.BLACK);
 
-    r.DrawRectangle(scanner1X, Y, scanner1Width, HEIGTH, color);
+    r.DrawRectangle(particle1X, Y, particle1Width, HEIGTH, r.SKYBLUE);
+    r.DrawRectangle(particle2X, Y, particle2Width, HEIGTH, r.SKYBLUE);
+
+    r.DrawRectangle(scanner1X, Y, scanner1Width, HEIGTH, color1);
+    r.DrawRectangle(scanner2X, Y, scanner2Width, HEIGTH, color2);
 
     r.EndDrawing();
 }

@@ -1,16 +1,18 @@
 const r = require("raylib");
 
-const windowWidth = 500;
+const windowWidth = 700;
 const windowHeight = 400;
 const FPS = 60;
 
-let x = 0;
-let y = 0;
+const speed = 3;
+
+let scnX = 0;
+let scnY = 0;
+const scnRange = 20;
+const scnWidth = scnRange;
+const scnHeight = windowHeight;
 
 let isReached = false;
-
-const scnWidth = 20;
-const scnHeight = windowHeight;
 
 function setup() {
     r.InitWindow(windowWidth, windowHeight, "Particle Detector");
@@ -18,36 +20,49 @@ function setup() {
 }
 
 function getStatus() {
-    if ((x + scnWidth) >= windowWidth) {
+    if ((scnX + scnWidth) >= windowWidth) {
         return true;
     }
 
-    if (x <= 1) {
+    if (scnX <= 1) {
         return false;
     }
 
     return isReached;
 }
 
+function overlapDetector(scnStart, scnRange, partStart, partRange) {
+    const scnEnd = scnStart + scnRange;
+    const partEnd = partStart + partRange;
+
+    if ((partEnd >= scnStart) && (partStart <= scnEnd)) {
+        return r.RED;
+    }
+    return r.WHITE;
+}
+
 function update() {
     isReached = getStatus();
-
-    const speed = 1;
-    return isReached ? x - speed : x + speed;
+    scnX = isReached ? scnX - speed : scnX + speed;
 }
 
 function draw() {
     r.BeginDrawing();
     r.ClearBackground(r.BLACK);
 
-    particleX = 100;
-    particleY = 0;
-    particleWidth = 50;
-    particleHeight = windowHeight;
+    const particleRange = 50;
+    const particleStart = 100;
+
+    const particleX = particleStart;
+    const particleY = 0;
+    const particleWidth = particleRange;
+    const particleHeight = windowHeight;
 
     r.DrawRectangle(particleX, particleY, particleWidth, particleHeight, r.BLUE);
 
-    r.DrawRectangle(x, y, scnWidth, scnHeight, r.WHITE);
+    const color = overlapDetector(scnX, scnRange, particleStart, particleRange);
+
+    r.DrawRectangle(scnX, scnY, scnWidth, scnHeight, color);
 
     r.EndDrawing();
 }

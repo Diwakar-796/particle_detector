@@ -39,6 +39,13 @@ function draw() {
     r.BeginDrawing();
     r.ClearBackground(r.BLACK);
 
+    particleX = 100;
+    particleY = 0;
+    particleWidth = 50;
+    particleHeight = windowHeight;
+
+    r.DrawRectangle(particleX, particleY, particleWidth, particleHeight, r.BLUE);
+
     r.DrawRectangle(x, y, scnWidth, scnHeight, r.WHITE);
 
     r.EndDrawing();

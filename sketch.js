@@ -6,7 +6,6 @@ const FPS = 60;
 
 let x = 0;
 let y = 0;
-const speed = 1;
 
 let isReached = false;
 
@@ -32,7 +31,9 @@ function getStatus() {
 
 function update() {
     isReached = getStatus();
-    x = isReached ? x - speed : x + speed;
+
+    const speed = 1;
+    return isReached ? x - speed : x + speed;
 }
 
 function draw() {

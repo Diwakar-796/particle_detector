@@ -44,8 +44,12 @@ function getColorOnOverlap(part1Detect, part2Detect) {
 }
 
 function update() {
-    isReached = getStatus();
-    scannerX += isReached ? -speed : speed;
+    scannerX += speed;
+    if ((scannerX >= windowWidth) || (scannerX <= 0)) {
+        speed = -speed;
+    }
+    // isReached = getStatus();
+    // scannerX += isReached ? -speed : speed;
 }
 
 function draw() {

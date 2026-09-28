@@ -1,90 +1,97 @@
 const r = require("raylib");
+const d = require("./detector.js");
+const f = require("./fields.js");
+const d1 = require("./d1.js");
+const d2 = require("./d2.js");
+const d3 = require("./d3.js");
 
-const WIDTH = 700;
-const HEIGTH = 500;
-const FPS = 60;
+function setup(width, height, title) {
+    r.SetTraceLogLevel(r.LOG_ERROR);
+    r.InitWindow(width, height, title);
+    r.SetTargetFPS(60);
 
-const X = 0;
-const Y = 0;
+    d1.lower = 0;
+    d1.upper = width / 2;
 
-let speed1 = 3;
-let scanner1X = 0;
-const scanner1Width = 50;
+    d2.lower = width / 2;
+    d2.upper = width;
 
-let speed2 = 1;
-let scanner2X = WIDTH / 2;
-const scanner2Width = 20;
-
-let speed3 = 1;
-let scanner3Y = 0;
-const scanner3Height = 30;
-
-function setup() {
-    r.InitWindow(WIDTH, HEIGTH, "Particle Detector");
-    r.SetTargetFPS(FPS);
+    d3.lower = 0;
+    d3.upper = height;
 }
 
-function getSpeed(x, start, end, width, speed) {
-    return (((x + width) >= end) || (x <= start)) ? -speed : speed;
+function getColorOnDetect(hasDetected) {
+    return hasDetected ? r.ColorAlpha(r.RED, 0.7) : r.WHITE;
 }
 
-function isOverlap(scannerStart, scannerWidth, particleStart, particleWidth) {
-    const scannerEnd = scannerStart + scannerWidth;
-    const particleEnd = particleStart + particleWidth;
-
-    return (particleEnd >= scannerStart) && (particleStart <= scannerEnd);
+function drawVerticalRange(start, width, color) {
+    r.DrawRectangle(start, 0, width, r.GetScreenHeight(), color);
 }
 
-function getColorOnOverlap(isOvrlp1, isOvrlp2) {
-    return (isOvrlp1 || isOvrlp2) ? r.ColorAlpha(r.RED, 0.7) : r.WHITE;
+function drawHorizontalRange(start, height, color) {
+    r.DrawRectangle(0, start, r.GetScreenWidth(), height, color);
 }
 
 function update() {
-    scanner1X += speed1;
-    speed1 = getSpeed(scanner1X, 0, WIDTH / 2, scanner1Width, speed1);
+    d1.start = d.calcNextPosition(d1.start, d1.velocity);
+    d1.velocity = d.calcVelocity(
+        d1.start,
+        d1.lower,
+        d1.upper,
+        d1.width,
+        d1.velocity,
+    );
 
-    scanner2X += speed2;
-    speed2 = getSpeed(scanner2X, WIDTH / 2, WIDTH, scanner2Width, speed2);
+    d2.start = d.calcNextPosition(d2.start, d2.velocity);
+    d2.velocity = d.calcVelocity(
+        d2.start,
+        d2.lower,
+        d2.upper,
+        d2.width,
+        d2.velocity,
+    );
 
-    scanner3Y += speed3;
-    speed3 = getSpeed(scanner3Y, 0, HEIGTH, scanner3Height, speed3);
+    d3.start = d.calcNextPosition(d3.start, d3.velocity);
+    d3.velocity = d.calcVelocity(
+        d3.start,
+        d3.lower,
+        d3.upper,
+        d3.height,
+        d3.velocity,
+    );
+}
+
+function drawFields() {
+    drawVerticalRange(f.field1Start, f.field1Width, r.SKYBLUE);
+    drawVerticalRange(f.field2Start, f.field2Width, r.SKYBLUE);
+
+    drawHorizontalRange(f.field3Start, f.field3Height, r.SKYBLUE);
 }
 
 function draw() {
-    const particle1Range = 50;
-    const particle1Start = 100;
+    const color1 = getColorOnDetect(
+        d.isDetected(d1.start, d1.width, f.field1Start, f.field1Width) ||
+            d.isDetected(d1.start, d1.width, f.field2Start, f.field2Width),
+    );
 
-    const particle1X = particle1Start;
-    const particle1Width = particle1Range;
+    const color2 = getColorOnDetect(
+        d.isDetected(d2.start, d2.width, f.field1Start, f.field1Width) ||
+            d.isDetected(d2.start, d2.width, f.field2Start, f.field2Width),
+    );
 
-    const particle2Range = 10;
-    const particle2Start = 400;
-
-    const particle2X = particle2Start;
-    const particle2Width = particle2Range;
-
-    const particle3Range = 25;
-    const particle3Start = 300;
-
-    const particle3X = particle3Start;
-    const particle3Height = particle3Range;
-
-    const color1 = getColorOnOverlap(isOverlap(scanner1X, scanner1Width, particle1Start, particle1Range), isOverlap(scanner1X, scanner1Width, particle2Start, particle2Range));
-
-    const color2 = getColorOnOverlap(isOverlap(scanner2X, scanner2Width, particle1Start, particle1Range), isOverlap(scanner2X, scanner2Width, particle2Start, particle2Range));
-
-    const color3 = getColorOnOverlap(isOverlap(scanner3Y, scanner3Height, particle3Start, particle3Range));
+    const color3 = getColorOnDetect(
+        d.isDetected(d3.start, d3.height, f.field3Start, f.field3Height),
+    );
 
     r.BeginDrawing();
     r.ClearBackground(r.BLACK);
 
-    r.DrawRectangle(particle1X, Y, particle1Width, HEIGTH, r.SKYBLUE);
-    r.DrawRectangle(particle2X, Y, particle2Width, HEIGTH, r.SKYBLUE);
-    r.DrawRectangle(X, particle3X, WIDTH, particle3Height, r.SKYBLUE);
+    drawFields();
 
-    r.DrawRectangle(scanner1X, Y, scanner1Width, HEIGTH, color1);
-    r.DrawRectangle(scanner2X, Y, scanner2Width, HEIGTH, color2);
-    r.DrawRectangle(X, scanner3Y, WIDTH, scanner3Height, color3);
+    drawVerticalRange(d1.start, d1.width, color1);
+    drawVerticalRange(d2.start, d2.width, color2);
+
+    drawHorizontalRange(d3.start, d3.height, color3);
 
     r.EndDrawing();
 }
